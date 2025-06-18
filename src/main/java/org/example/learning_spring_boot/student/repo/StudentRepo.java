@@ -1,0 +1,48 @@
+package org.example.learning_spring_boot.student.repo;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
+import org.example.learning_spring_boot.student.entity.Student;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+@Repository(value = "studentRepo")
+//@Component(value = "studentRepo")
+//@Scope("singleton")
+//@Scope("prototype")
+public class StudentRepo implements IStudentRepo {
+    private final EntityManager entityManager;
+
+    public StudentRepo(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
+
+    @Override
+    public List<Student> getStudents() {
+        final Query nativeQuery = entityManager.createNativeQuery("SELECT * FROM Students", Student.class);
+        final List<Student> resultList = (List<Student>) nativeQuery.getResultList();
+        return resultList;
+    }
+
+    @Override
+    public void addStudent(Student student) {
+
+    }
+
+    @Override
+    public void deleteStudent(int id) {
+
+    }
+
+    @Override
+    public void updateStudent(Student student) {
+
+    }
+
+    @Override
+    public Student getStudentById(int id) {
+        return null;
+    }
+}
