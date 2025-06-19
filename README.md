@@ -221,3 +221,295 @@ public class MyBeanConfig {
 ```
 
 So when we use componenet and similar ones they create beans directly for class,but configuration is used to initiall load classs itself and then add bean methods to IOC
+
+32.We have persistence.xml in old projects,acts as application properties
+
+33.OOP ORM specification,JPA is java version of orm specification
+
+34.JPA implementations are Hibernate,EclipseLink
+
+**Default ORM** is Hibernate
+
+35.**Spring Data** exists to **dramatically simplify** and **standardize** the way you interact with databases (both SQL and NoSQL) in Spring applications. Instead of writing tons of DAO boilerplate, you get:
+
+---
+
+### 1. Repository Abstraction & CRUD Methods for Free
+
+By extending one of Spring Data’s repository interfaces, you immediately inherit methods like `save()`, `findById()`, `findAll()`, `delete()`, and more:
+
+```java
+
+public interface UserRepository extends JpaRepository<User, Long> { }
+```
+
+You don’t have to write implementations—Spring Data auto-generates them at runtime.
+
+There is a proxy pattern in background again.We have done this one in C# manually(fucking annoying).
+
+### 2. Query Derivation from Method Names
+
+Need to look up users by email or status? Just add methods to your interface:
+
+```java
+java
+List<User> findByStatus(Status status);
+Optional<User> findByEmail(String email);//can return list or not
+//Optional does not force you to return exact same thing
+
+```
+
+Spring Data parses those method names and builds the corresponding JPQL/SQL (or MongoDB, Cassandra CQL, etc.) queries automatically.
+
+### 3. Native Sql Query support
+
+```java
+@Query(nativeQuery = true, 
+value = "select * from Students where Name=:name and Surname=:surname")
+List<Student> findAll(String name, String surname);
+```
+
+### 4. Projection support in order to get values from joins,concats etc
+
+```java
+public interface StudentProjection 
+      {    
+      String getFirstName();    
+      String getLastName();    
+      String getFullName();
+      }
+      
+@Query(
+            nativeQuery = true,
+            value = """
+Select Name as firstname, Surname as lastname, 
+CONCAT(Name ,' ' ,Surname) as fullname from Students
+            """
+    )
+    List<StudentProjection> fetchFullName();
+```
+
+Here we should match sql values to our projection class getters, we use as here.
+
+36.JPQL-is java persistence query language, alternative to sql.When we use entity Manager we can do **createQuery()** not create native query.Syntax will be select s from Students s.But we do not prefer this one, because the performance is bad. Her[e](http://bad.Here) functions represent sql procedures.
+
+37.Spring’s IoC container supports three primary styles of injecting dependencies into your beans:
+
+---
+
+## 1. Constructor Injection
+
+Spring calls your bean’s constructor and passes in all required collaborators.
+
+```java
+java
+@Component
+public class OrderService {
+  private final PaymentGateway gateway;
+
+  // Spring will autowire this constructor
+  @Autowired
+  public OrderService(PaymentGateway gateway) {
+    this.gateway = gateway;
+  }
+}
+
+```
+
+- **Pros:**
+    - Ensures required dependencies are never `null`
+    - Promotes immutability (mark your fields `final`)
+    - Easier to write unit tests (no container needed)
+- **When to use:**
+    - For mandatory dependencies
+    - Recommended in modern Spring (and required under Spring Boot if a bean has exactly one constructor—the `@Autowired` can even be omitted).
+
+---
+
+## 2. Setter Injection
+
+Spring calls a no-arg constructor, then invokes setter methods to supply dependencies.
+
+```java
+java
+@Component
+public class ReportGenerator {
+  private DataSource ds;
+
+  @Autowired
+  public void setDataSource(DataSource ds) {
+    this.ds = ds;
+  }
+}
+
+```
+
+- **Pros:**
+    - Allows for optional dependencies (you can omit calling the setter)
+    - Good when you may need to reconfigure a dependency at runtime
+- **Cons:**
+    - Bean can be in an “incomplete” state between instantiation and setter call
+    - Harder to enforce required dependencies
+
+---
+
+## 3. Field Injection
+
+Spring injects directly into your private fields via reflection:
+
+```java
+java
+@Component
+public class NotificationService {
+  @Autowired
+  private EmailClient emailClient;
+}
+
+```
+
+- **Pros:**
+    - Very concise—no boilerplate constructor or setter
+- **Cons:**
+    - Harder to test (you need reflection or a Spring context)
+    - Encourages mutable state
+    - Considered an anti‐pattern by many (less explicit)
+
+  38.When Spring finds multiple candidate beans for a single injection point, it needs a way to decide which one you actually want. That’s where **`@Primary`** and **`@Qualifier`** come in.
+    
+  ---
+
+  ## `@Primary` — the default choice
+
+    - **What it does:** Marks one bean as the *default* when more than one matches by type.
+    - **Where to put it:** On the bean definition (class or `@Bean` method).
+    - **How it works:** If you `@Autowired MyService svc;` and there are three `MyService` beans in the context but one is annotated `@Primary`, Spring injects that one.
+
+    ```java
+    java
+    CopyEdit
+    @Service
+    @Primary
+    public class PaypalPaymentService implements PaymentService {
+       // …
+    }
+    
+    @Service
+    public class StripePaymentService implements PaymentService {
+       // …
+    }
+    
+    // Somewhere else
+    @Component
+    public class OrderProcessor {
+      private final PaymentService payment;
+    
+      // No need for @Qualifier: PaypalPaymentService is @Primary
+      public OrderProcessor(PaymentService payment) {
+        this.payment = payment;
+      }
+    }
+    
+    ```
+    
+  ---
+
+  ## `@Qualifier` — pick by name (or custom qualifier)
+
+    - **What it does:** Lets you disambiguate *exactly* which bean you want, by name or by a custom qualifier annotation.
+    - **Where to put it:**
+        - On the bean: `@Service("stripe")` or `@Qualifier("stripe")`
+        - On the injection point: `@Autowired @Qualifier("stripe") PaymentService payment;`
+    - **How it works:** Spring matches the qualifier value against the bean’s name or its `@Qualifier` metadata.
+
+    ```java
+    java
+    CopyEdit
+    @Service("paypal")
+    public class PaypalPaymentService implements PaymentService { … }
+    
+    @Service("stripe")
+    public class StripePaymentService implements PaymentService { … }
+    
+    @Component
+    public class OrderProcessor {
+    
+      private final PaymentService payment;
+    
+      public OrderProcessor(
+          @Qualifier("stripe") PaymentService payment  // explicitly choose stripe
+      ) {
+        this.payment = payment;
+      }
+    }
+    
+    ```
+
+  You can also define **custom qualifier annotations**:
+
+    ```java
+    java
+    CopyEdit
+    @Target({ FIELD, PARAMETER, TYPE })
+    @Retention(RUNTIME)
+    @Qualifier
+    public @interface FastPayment { }
+    
+    @FastPayment
+    @Service
+    public class StripePaymentService implements PaymentService { … }
+    
+    @Component
+    public class OrderProcessor {
+      public OrderProcessor(@FastPayment PaymentService payment) {
+        this.payment = payment;  // injects StripePaymentService
+      }
+    }
+    
+    ```
+    
+  ---
+
+  ## Combining `@Primary` and `@Qualifier`
+
+    - You can put `@Primary` on your “usual” bean so most injections pick it up.
+    - Use `@Qualifier` only where you need one of the other beans.
+
+    ```java
+    java
+    CopyEdit
+    @Service
+    @Primary
+    public class PaypalPaymentService implements PaymentService { … }
+    
+    @Service
+    public class StripePaymentService implements PaymentService { … }
+    
+    @Component
+    public class DefaultProcessor {
+      public DefaultProcessor(PaymentService payment) { /* gets Paypal */ }
+    }
+    
+    @Component
+    public class StripeOnlyProcessor {
+      public StripeOnlyProcessor(
+          @Qualifier("stripePaymentService") PaymentService payment
+      ) { /* gets Stripe */ }
+    }
+    
+    ```
+    
+  ---
+
+  ### When to use which
+
+    - **`@Primary`** for the bean you want used 99% of the time.
+    - **`@Qualifier`** for the rare cases where you need a different implementation.
+
+  Together they give you precise control over which implementation Spring injects whenever more than one matches by type.
+
+
+  39.We change object in 2 ways:
+
+  **1.Proxy Pattern**
+
+  **2.Reflection API**
