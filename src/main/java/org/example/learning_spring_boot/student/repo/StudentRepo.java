@@ -3,6 +3,8 @@ package org.example.learning_spring_boot.student.repo;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import org.example.learning_spring_boot.student.entity.Student;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
@@ -12,11 +14,21 @@ import java.util.List;
 //@Component(value = "studentRepo")
 //@Scope("singleton")
 //@Scope("prototype")
+@Primary
 public class StudentRepo implements IStudentRepo {
-    private final EntityManager entityManager;
 
-    public StudentRepo(EntityManager entityManager) {
+    @Autowired  //Field Injection
+    private EntityManager entityManager;
+
+    //Constructor Injection
+    public StudentRepo(final EntityManager entityManager) {
         this.entityManager = entityManager;
+    }
+
+    //Setter Injection
+    public StudentRepo setEntityManager(final EntityManager entityManager) {
+        this.entityManager = entityManager;
+        return this;
     }
 
     @Override

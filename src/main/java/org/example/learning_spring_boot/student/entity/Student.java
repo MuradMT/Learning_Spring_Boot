@@ -1,56 +1,69 @@
 package org.example.learning_spring_boot.student.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
-@Entity(name = "Students")
+@Entity
+@Table(name = "Students")   // maps to your existing table
 public class Student {
+
     @Id
-    private int Id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;            // lower-case
+
     @Column(name = "Name")
-    private String Firstname;
+    private String firstName;      // lower-case camelCase
+
     @Column(name = "Surname")
-    private String Lastname;
+    private String lastName;       // lower-case camelCase
 
-    public Student() {
+    @Column(name = "Age")
+    private Integer age;           // lower-case
 
+    public Student() { }
+
+    public Student(String firstName, String lastName, Integer age) {
+        this.firstName = firstName;
+        this.lastName  = lastName;
+        this.age       = age;
     }
 
-    public int getAge() {
-        return Age;
+    // --- standard getters & setters ---
+
+    public Integer getId() {
+        return id;
+    }
+    public void setId(Integer id) {
+        this.id = id;
     }
 
-    public void setAge(int age) {
-        Age = age;
+    public String getFirstName() {
+        return firstName;
+    }
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    private int Age;
-
-    public Student(String name, String surname,int age) {
-        Firstname = name;
-        Lastname = surname;
-        Age=age;
+    public String getLastName() {
+        return lastName;
+    }
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
-    public String getName() {
-        return Firstname;
+    public Integer getAge() {
+        return age;
     }
-
-    public void setName(String name) {
-        Firstname = name;
-    }
-
-    public String getSurname() {
-        return Lastname;
-    }
-
-    public void setSurname(String surname) {
-        Lastname = surname;
+    public void setAge(Integer age) {
+        this.age = age;
     }
 
     @Override
     public String toString() {
-        return "Name:"+this.getName()+" Surname:"+this.getSurname()+"Age:"+this.getAge();
+        return "Student{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='"  + lastName  + '\'' +
+                ", age=" + age +
+                '}';
     }
 }
