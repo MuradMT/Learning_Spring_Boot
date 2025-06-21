@@ -7,6 +7,10 @@ import org.example.learning_spring_boot.student.repo.StudentDataRepo;
 import org.example.learning_spring_boot.student.repo.StudentRepo;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,9 +34,16 @@ public class StudentController {
 //        return studentRepo1.getStudents();
 //    }
     @GetMapping(value = "/all")
-    public List<Student> getStudents(){
+    public List<Student> getStudents(@RequestParam(required = false,value = "page_number")Integer pageNumber,
+                                     @RequestParam(required = false,value = "page_size")Integer PageSize){
         //return studentRepo.getStudents();
-        return studentDataRepo.findAll();
+        if(pageNumber!=null){
+            Pageable pageable = PageRequest.of(pageNumber, PageSize, Sort.by("id").descending());
+            Page<Student> all = studentDataRepo.findAll(pageable);
+            return all.getContent();
+        }else{
+            return studentDataRepo.findAll();
+        }
     }
     @GetMapping(value="/allByName")
     public List<Student> getStudentsByName(){
