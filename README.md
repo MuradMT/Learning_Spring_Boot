@@ -608,4 +608,222 @@ so we create a detached object here.
       .orderBy(cb.asc(root.get("firstName")));
     
     ```
+45.
+`@ComponentScan(basePackages = "org.example.test")`
 
+Component scan allows us to use any components in different package.
+
+46.@RequestParam annotation helps us to get query parameters.We can do this one with servlet also.We can make it optional with required.
+
+```java
+
+@RequestParam(required = false,value = "page_number")
+```
+
+The `value` parameter **specifies the name of the query parameter** in the request URL that you want to bind to a method argument.
+
+---
+
+```java
+java
+CopyEdit
+@GetMapping("/greet")
+public String greet(@RequestParam(value = "name") String userName) {
+    return "Hello, " + userName;
+}
+
+```
+
+If a client sends a request like:
+
+```
+pgsql
+CopyEdit
+GET /greet?name=Murad
+
+```
+
+Then `userName` will be `"Murad"`.
+
+47.We have JPARepository and CRUDRepository.Crud one only covers the basic functionalities,but JPA covers everything that crud one covers.The advantages of using JPA over Crud one is:
+
+```java
+**//1.Sorting Functionality:**
+return studentDataRepo.findAll(Sort.*by*("id").descending());
+```
+
+```java
+//2.Pagination Functionality(Sorting also covered inside pagination)
+@GetMapping(value = "/all")
+public List<Student> getStudents(
+@RequestParam(required = false,value = "page_number")Integer pageNumber,
+@RequestParam(required = false,value = "page_size")Integer PageSize)
+{  
+             if(pageNumber==null){        
+             Pageable pageable = PageRequest.*of*(pageNumber, PageSize, 
+             Sort.*by*("name").descending());        
+             Page<Student> all = studentDataRepo.findAll(pageable);        
+             return all.getContent();    
+             }else{        
+             return studentDataRepo.findAll();    
+             }}
+```
+
+48.Here’s a breakdown of **all essential JPA relationship annotations** used in entity modeling. These annotations define how objects relate to each other and how these relationships are mapped to the database.
+
+---
+
+### 🔹 1. `@ManyToOne`
+
+**Many (A) → One (B)**
+
+Used when many entities relate to a single entity.
+
+```java
+java
+CopyEdit
+@ManyToOne
+@JoinColumn(name = "university_id")
+private University university;
+
+```
+
+- This is the **owning side**.
+- Foreign key goes in the `many` side table (`Student`).
+- Default fetch type: `EAGER`.
+
+---
+
+### 🔹 2. `@OneToMany`
+
+**One (B) → Many (A)**
+
+Used on the inverse side of a `@ManyToOne` relationship.
+
+```java
+java
+CopyEdit
+@OneToMany(mappedBy = "university")
+private List<Student> students;
+
+```
+
+- This is the **non-owning side**.
+- `mappedBy` points to the field in the owning entity.
+
+---
+
+### 🔹 3. `@OneToOne`
+
+**One (A) ↔ One (B)**
+
+Used when one entity has a unique relationship with another.
+
+```java
+java
+CopyEdit
+@OneToOne
+@JoinColumn(name = "passport_id")
+private Passport passport;
+
+```
+
+- Owning side uses `@JoinColumn`.
+- Default fetch type: `EAGER`.
+
+**Bidirectional Example:**
+
+```java
+java
+CopyEdit
+@OneToOne(mappedBy = "passport")
+private Student student;
+
+```
+
+---
+
+### 🔹 4. `@ManyToMany`
+
+**Many (A) ↔ Many (B)**
+
+Used when multiple entities relate to multiple others.
+
+```java
+java
+CopyEdit
+@ManyToMany
+@JoinTable(
+    name = "student_course",
+    joinColumns = @JoinColumn(name = "student_id"),
+    inverseJoinColumns = @JoinColumn(name = "course_id")
+)
+private List<Course> courses;
+
+```
+
+- Creates a **join table** to represent the relationship.
+- `@JoinTable` is optional but gives control over table/column names.
+- Default fetch type: `LAZY`.
+
+### 🔹 Optional: Other Supporting Annotations
+
+- `@JoinColumn`: Customizes the foreign key column.
+- `@JoinTable`: Defines join table for many-to-many.
+- `mappedBy`: Indicates inverse side (non-owning).
+- `fetch = FetchType.LAZY` or `EAGER`: Controls loading strategy.We have optional [parameter.It](http://parameter.It) is interview question.
+- `@OnDelete(action = OnDeleteAction.*NO_ACTION*)`
+- We  have cascade type selection also
+
+```java
+@JsonIgnore helps us to prevent recursion in related tables,
+like imagine we have one to many relationship,then we will use 
+this one or vice versa.
+```
+
+49.
+
+🔹 Default Jackson Behavior
+
+By default, **Jackson will fail** if it encounters a "bean" with no serializable properties.
+
+You can tell Jackson **not to fail** when it encounters such cases: Global config in Spring Boot (`application.properties`)
+
+```
+properties
+CopyEdit
+spring.jackson.serialization.fail-on-empty-beans=false
+
+```
+
+This happens when we try to do lazy [loading.In](http://loading.In) lazy loading we do not load things fully.And when we see something lazy it throws [exception.So](http://exception.So) this command prevents this behaviour.
+
+50.Automatically creating tables in java to sql
+
+```
+properties
+CopyEdit
+spring.jpa.hibernate.ddl-auto=update
+
+```
+
+- Checks existing tables.
+- Adds missing tables/columns if needed.
+- **Does not drop or remove columns or data.**
+- Safe-ish for local dev, but not recommended for production.
+
+---
+
+### Production Recommendation
+
+- Use **Flyway** or **Liquibase** for production schema versioning.
+- Set:
+
+```
+properties
+CopyEdit
+spring.jpa.hibernate.ddl-auto=validate
+
+```
+
+to ensure the schema matches without altering it automatically.
