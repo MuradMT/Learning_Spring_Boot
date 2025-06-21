@@ -1,6 +1,7 @@
 package org.example.learning_spring_boot.student.repo;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.Query;
 import org.example.learning_spring_boot.student.entity.Student;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +46,15 @@ public class StudentRepo implements IStudentRepo {
 
     @Override
     public void deleteStudent(int id) {
-
+           final EntityTransaction transaction = entityManager.getTransaction();
+           try{
+               transaction.begin();
+               final Student student = entityManager.find(Student.class, id);
+               entityManager.remove(student);
+               transaction.commit();
+           }catch(Exception e){
+               transaction.rollback();
+           }
     }
 
     @Override

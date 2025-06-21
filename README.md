@@ -513,3 +513,99 @@ public class NotificationService {
   **1.Proxy Pattern**
 
   **2.Reflection API**
+
+40.Transaction,commit,rollback
+
+Example code snippet:
+
+```java
+@Override
+public void deleteStudent(int id) 
+{       
+final EntityTransaction transaction = entityManager.getTransaction();  
+     try{           
+     transaction.begin();           
+     final Student student = entityManager.find(Student.class, id); 
+               entityManager.remove(student);           
+               transaction.commit();       
+               }catch(Exception e){           
+               transaction.rollback();       
+               }}
+```
+
+41.
+Enabling printing SQL:
+`logging.level.org.hibernate.sql=DEBUG`
+
+42.**Hard  vs Soft Delete**
+
+43.**Attached**-everything happens inside transaction
+
+**Detached**-something happens outside transaction
+
+For isntance we find element outside transaction,but delete inisde transaction
+
+so we create a detached object here.
+
+44.The **`CriteriaBuilder`** is the entry point to JPA’s *Criteria API*, a type-safe, programmatic way to build queries instead of writing JPQL strings. It lives in the `jakarta.persistence.criteria` package (or `javax.persistence.criteria` if you’re on older versions).
+
+---
+
+## Why use the Criteria API?
+
+- **Type safety**: your IDE/compiler will catch typos in field names.
+- **Dynamic queries**: you can conditionally add `where` clauses, `order by`, joins, etc., at runtime.
+- **Refactoring-friendly**: renaming your entity’s fields automatically propagates to your criteria code.
+
+---
+
+## The typical workflow
+
+1. **Obtain a `CriteriaBuilder`** from your `EntityManager`:
+
+    ```java
+    java
+    CopyEdit
+    CriteriaBuilder cb = em.getCriteriaBuilder();
+    
+    ```
+
+2. **Create a `CriteriaQuery<T>`** for the result type `T`:
+
+    ```java
+    java
+    CopyEdit
+    CriteriaQuery<Student> cq = cb.createQuery(Student.class);
+    
+    ```
+
+3. **Define a “root”** (the `FROM` clause) and any joins:
+
+    ```java
+    java
+    CopyEdit
+    Root<Student> root = cq.from(Student.class);
+    
+    ```
+
+4. **Build predicates** (the `WHERE` clause) with helper methods on `CriteriaBuilder`:
+
+    ```java
+    java
+    CopyEdit
+    Predicate ageGt18   = cb.greaterThan(root.get("age"), 18);
+    Predicate lastNameA = cb.like(root.get("lastName"), "A%");
+    
+    ```
+
+5. **Compose your query** by chaining methods on `CriteriaQuery`:
+
+    ```java
+    java
+    CopyEdit
+    cq.select(root)
+      .where(cb.and(ageGt18, lastNameA))
+      .orderBy(cb.asc(root.get("firstName")));
+    
+    ```
+
