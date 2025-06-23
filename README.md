@@ -1017,3 +1017,156 @@ Example usage:
     }
 
 ```
+73.What is DTO,how to use it
+
+we can use bidirectional things,can get dto as request body then we map it to entity,or we send dto result ,converting entity to dto.
+
+DAO is same with repository.
+
+[74.Java](http://74.Java) 8 map function
+
+example usage:
+
+```java
+@GetMapping(value="/allDtos")
+    public List<StudentDTO> getAllStudents(@RequestParam(required = false, value = "name")String name, @RequestParam(required = false, value = "surname")String surname
+                                        ){
+        List<Student> all;
+        if(name!=null && surname!=null){
+            all = studentDataRepo.findAll(name,surname);
+        }
+         all=studentDataRepo.findAll();
+//        return  all.stream().map(student ->toStudentDto(student))
+//                .collect(Collectors.toList());
+        return  all.stream().map(StudentController::toStudentDto)
+                .collect(Collectors.toList());
+    }
+
+    private static StudentDTO toStudentDto(Student student){
+        return  new StudentDTO()
+                .setFirstName(student.getFirstName())
+                .setLastName(student.getLastName());
+    }
+```
+
+75.Sending method reference with ::
+
+76.Optional usage in controller:
+
+```java
+@GetMapping("{id}")
+    public Student getStudentById(@PathVariable Integer id){
+        Optional<Student> byId = studentDataRepo.findById(id);
+        return byId.orElse(null);
+    }
+```
+
+77.@JsonProperty inside dto fields can determine how to look when we get results,
+
+we change the name of field and we get exact name ,not our class field name.
+
+`@JsonProperty("surname")private String lastName;` we will get json surname: format.
+
+78.In java c# automapper alternative is ***MapStruct**.*
+
+```java
+//First add dependencies to gradle
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+//Second enable annotation processor in settings 
+//Third create interface
+package org.example.learning_spring_boot.student.dto;
+
+import org.example.learning_spring_boot.student.entity.Student;
+import org.mapstruct.Mapper;
+import org.mapstruct.factory.Mappers;
+
+@Mapper
+public interface StudentMapper {
+    StudentMapper MAPPER = Mappers.getMapper(StudentMapper.class);
+    StudentDTO toDto(Student student);
+    Student toEntity(StudentDTO studentDTO);
+}
+//Fourth step use it 
+ return new CommonDto()
+                .setObj( all.stream().map(StudentMapper.MAPPER::toDto)
+                        .collect(Collectors.toList()))
+                .setMessage("All students found")
+                .setDateTime(LocalDateTime.now());
+    }
+ //Additionally if you have extra fields that does not match 
+ //use extra mapping annotation
+ @Mapping(target = "surname",source = "lastname")
+     StudentDTO toDto(Student student);
+    @Mapping(target = "lastname",source = "surname")
+    Student toEntity(StudentDTO studentDTO);
+//additionally we write can write custom mappiing inside interface
+default StudentDTO toStudentDto(Student student){
+        return  new StudentDTO()
+                .setFirstName(student.getFirstName())
+                .setLastName(student.getLastName());
+    }
+```
+
+79.Java 8 LocalDateTime ,LocalDate,ZondeDateTime feature(we have extra devtools,not necessarry info).
+
+80.We have ***common response dto*** in java,example:
+
+```java
+//inside class
+package org.example.learning_spring_boot.common.dto;
+
+import java.time.LocalDateTime;
+
+public class CommonDto {
+    private Object obj;
+    private String message;
+    private LocalDateTime dateTime;
+
+    public Object getObj() {
+        return obj;
+    }
+
+    public CommonDto setObj(Object obj) {
+        this.obj = obj;
+        return this;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public CommonDto setMessage(String message) {
+        this.message = message;
+        return this;
+    }
+
+    public LocalDateTime getDateTime() {
+        return dateTime;
+    }
+
+    public CommonDto setDateTime(LocalDateTime dateTime) {
+        this.dateTime = dateTime;
+        return this;
+    }
+}
+
+//controller usage
+return new CommonDto()
+                .setObj( all.stream().map(StudentController::toStudentDto)
+                        .collect(Collectors.toList()))
+                .setMessage("All students found")
+                .setDateTime(LocalDateTime.now());
+```
+
+81.Lombok usage in spring with gradle:
+
+```java
+//First add dependencies
+implementation 'org.projectlombok:lombok:1.18.32'
+    annotationProcessor 'org.projectlombok:lombok:1.18.32'
+//Second just use it
+@Getter @Setter @Data(covers getter setter oveerides methods etc) is examples
+```
+
+We have again annotation processor.

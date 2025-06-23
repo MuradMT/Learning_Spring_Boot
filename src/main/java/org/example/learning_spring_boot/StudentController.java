@@ -1,5 +1,8 @@
 package org.example.learning_spring_boot;
 
+import org.example.learning_spring_boot.common.dto.CommonDto;
+import org.example.learning_spring_boot.student.dto.StudentDTO;
+import org.example.learning_spring_boot.student.dto.StudentMapper;
 import org.example.learning_spring_boot.student.entity.Student;
 import org.example.learning_spring_boot.student.entity.StudentProjection;
 import org.example.learning_spring_boot.student.repo.IStudentRepo;
@@ -13,8 +16,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "http://localhost:63342")
 @RestController
@@ -71,5 +76,33 @@ public class StudentController {
         Optional<Student> byId = studentDataRepo.findById(id);
         return byId.orElse(null);
     }
+
+    @GetMapping(value="/allDtos")
+    public CommonDto getAllStudents(@RequestParam(required = false, value = "name")String name, @RequestParam(required = false, value = "surname")String surname
+                                        ){
+        List<Student> all;
+        if(name!=null && surname!=null){
+            all = studentDataRepo.findAll(name,surname);
+        }
+         all=studentDataRepo.findAll();
+//        return  all.stream().map(student ->toStudentDto(student))
+//                .collect(Collectors.toList());
+//        return new CommonDto()
+//                .setObj( all.stream().map(StudentController::toStudentDto)
+//                        .collect(Collectors.toList()))
+//                .setMessage("All students found")
+//                .setDateTime(LocalDateTime.now());
+        return new CommonDto()
+                .setObj( all.stream().map(StudentMapper.MAPPER::toDto)
+                        .collect(Collectors.toList()))
+                .setMessage("All students found")
+                .setDateTime(LocalDateTime.now());
+    }
+
+//    private static StudentDTO toStudentDto(Student student){
+//        return  new StudentDTO()
+//                .setFirstName(student.getFirstName())
+//                .setLastName(student.getLastName());
+//    }
 
 }
