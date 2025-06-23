@@ -827,3 +827,74 @@ spring.jpa.hibernate.ddl-auto=validate
 ```
 
 to ensure the schema matches without altering it automatically.
+
+51.@DynamicUpdate-Specifies that SQL update statements for the annotated entity are generated dynamically, and only include columns which are actually being updated.
+
+52.@NamedQuery-helps us to write query in annotation and give it name,then use it with entity manager.
+
+```java
+
+@NamedQuery(name = "findByName",query = "Select u from University u where u.name=:name")
+```
+
+```java
+entityManager.createNamedQuery("findByName", University.class)        .getResultList();
+```
+
+1. `@GeneratedValue(strategy = GenerationType.*IDENTITY*)` -here we have different strategies.we can choose identity,sequence &table ,uuid etc. auto  selects default type sequence.
+2. In order to prevent circular dependency in spring,we generally use `@Lazy` annotation.
+3. `@RequestBody Student student` allows us to get data from request body.
+4. Looked at how to do post request in postman,json format.
+5. @Transactional is used when we create custom jpa repo,not in spring data.
+
+```java
+@Transactional 
+public void addStudent(Student student) {
+       entityManager.persist(student);
+ }
+ 
+```
+
+Transactional belongs only to this function,if we use other functions inside it then ,then we should annotate them also.INTERVIEW QUESTION.***readonly=true*** allows us only to do read operations,blocks write operations.
+
+58.jpa,boot,data difference,CAP theorem,ACID.
+
+59.`@Transactional(rollbackFor = {NullPointerException.class, SQLException.class})` we can do rollback for all exception types or specific exception type such as SQLException.And we have additionally norollbackfor.We have ***timeout***,finishes transaction after if we do not find anything.
+
+60.`@Transactional(propagation = Propagation.*REQUIRED*)` In Spring, **`propagation`** refers to how **transaction boundaries** behave when a method that runs in a transaction is called from another method that may or may not already be within a transaction.
+
+| Propagation Type | Behavior |
+| --- | --- |
+| `REQUIRED`*(default)* | Joins the existing transaction if one exists; otherwise, creates a new one. |
+| `REQUIRES_NEW` | Suspends the existing transaction (if any) and **always starts a new one**. |
+| `NESTED` | Executes within a **nested** transaction if a parent exists; otherwise behaves like `REQUIRED`. Requires a savepoint-capable datasource (e.g., JDBC). |
+| `SUPPORTS` | Executes within a transaction if one exists; otherwise runs **non-transactionally**. |
+| `NOT_SUPPORTED` | Always runs **non-transactionally**, suspending any existing transaction. |
+| `NEVER` | Runs only when there’s **no transaction**. Throws exception if a transaction exists. |
+| `MANDATORY` | Requires an existing transaction. Throws exception if none exists. |
+
+61.In Spring, **`@Transactional(isolation = Isolation.X)`** controls the ***transaction isolation level***, which defines how concurrent transactions interact with each other — especially regarding **data visibility** and **modification**.
+
+---
+
+### Why Isolation Matters
+
+Isolation levels help prevent concurrency issues such as:
+
+| Issue | Description |
+| --- | --- |
+| **Dirty Read** | Reading uncommitted data from another transaction. |
+| **Non-repeatable Read** | A row value changes between two reads in the same transaction. |
+| **Phantom Read** | A new row appears when the same query is run again in the same transaction. |
+
+---
+
+### Common Isolation Levels in Spring (`org.springframework.transaction.annotation.Isolation`)
+
+| Isolation Level | Prevents | Description |
+| --- | --- | --- |
+| `DEFAULT` | – | Uses the default isolation level of the underlying DB (typically `READ_COMMITTED`). |
+| `READ_UNCOMMITTED` | – | Allows dirty reads; lowest isolation level. |
+| `READ_COMMITTED` *(default in many DBs)* | Dirty reads | Only committed data is visible. |
+| `REPEATABLE_READ` | Dirty & non-repeatable reads | Ensures values remain the same when read multiple times. |
+| `SERIALIZABLE` | Dirty, non-repeatable, phantom reads | Highest isolation; transactions run sequentially. Most restrictive and slowest. |

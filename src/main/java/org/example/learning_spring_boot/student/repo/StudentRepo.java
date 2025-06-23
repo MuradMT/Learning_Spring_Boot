@@ -4,12 +4,16 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.Query;
 import org.example.learning_spring_boot.student.entity.Student;
+import org.example.learning_spring_boot.student.entity.University;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.SQLException;
 import java.util.List;
 @Repository(value = "studentRepo")
 //@Component(value = "studentRepo")
@@ -26,6 +30,12 @@ public class StudentRepo implements IStudentRepo {
         this.entityManager = entityManager;
     }
 
+    public List<University> getUniversitiesByName() {
+        return
+                entityManager.createNamedQuery("findByName", University.class)
+                        .getResultList();
+    }
+
     //Setter Injection
     public StudentRepo setEntityManager(final EntityManager entityManager) {
         this.entityManager = entityManager;
@@ -40,8 +50,9 @@ public class StudentRepo implements IStudentRepo {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED)
     public void addStudent(Student student) {
-
+           entityManager.persist(student);
     }
 
     @Override

@@ -59,4 +59,9 @@ public class StudentController {
         return studentDataRepo.fetchFullName();
     }
 
+    @PostMapping
+    public Student addStudent(@RequestBody Student student){
+        return studentDataRepo.save(student);
+    }
+
 }
