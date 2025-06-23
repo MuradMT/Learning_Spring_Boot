@@ -21,10 +21,7 @@ public class Student {
     @Column(name = "Age")
     private Integer age; // lower-case
 
-    @ManyToOne(fetch = FetchType.EAGER,optional = false)
-    @JoinColumn(name = "id",nullable = false)
-    @OnDelete(action = OnDeleteAction.NO_ACTION)
-    private University university;
+
 
     public Student() { }
 

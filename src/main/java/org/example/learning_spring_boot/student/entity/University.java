@@ -17,18 +17,9 @@ public class University {
 
     private String name;
 
-    @OneToMany(mappedBy = "university", targetEntity = Student.class,cascade = CascadeType.ALL,
-            fetch = FetchType.EAGER,orphanRemoval = true)
-    @JsonIgnore
-    private List<Student> students;
 
-    public List<Student> getStudents() {
-        return students;
-    }
 
-    public void setStudents(List<Student> students) {
-        this.students = students;
-    }
+
 
     public int getId() {
         return id;

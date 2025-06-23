@@ -898,3 +898,69 @@ Isolation levels help prevent concurrency issues such as:
 | `READ_COMMITTED` *(default in many DBs)* | Dirty reads | Only committed data is visible. |
 | `REPEATABLE_READ` | Dirty & non-repeatable reads | Ensures values remain the same when read multiple times. |
 | `SERIALIZABLE` | Dirty, non-repeatable, phantom reads | Highest isolation; transactions run sequentially. Most restrictive and slowest. |
+
+62.Looked at javascript,write a ajax script to consume our api respnse at demonstrate it in html:
+
+```java
+<script>
+        fetch("http://localhost:9090/api/students/all")
+            .then(response => response.json())
+            .then(data => {
+                let html = "<ul>";
+                data.forEach(student => {
+                    html += `<li>${student.id}: ${student.firstName} ${student.lastName} (${student.age} years old)</li>`;
+                });
+                html += "</ul>";
+
+                document.getElementById("students").innerHTML = html;
+            })
+            .catch(error => {
+                console.error("Error fetching students:", error);
+            });
+    </script>
+```
+
+63.We can do cors configuration with just simple annotation on top of controller,but we can globally configure it also.Example(CORS for 1 controller):
+
+```java
+
+@CrossOrigin(origins = "http://localhost:63342")
+```
+
+64.Learned about how to use bootstrap js library
+
+```java
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" ></script><script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"></script><script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"></script>
+```
+
+Built in modal example:
+
+```java
+ <!-- Button trigger modal -->
+       <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter">
+           Launch demo modal
+       </button>
+
+       <!-- Modal -->
+       <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+           <div class="modal-dialog modal-dialog-centered" role="document">
+               <div class="modal-content">
+                   <div class="modal-header">
+                       <h5 class="modal-title" id="exampleModalLongTitle">Modal title</h5>
+                       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                           <span aria-hidden="true">&times;</span>
+                       </button>
+                   </div>
+                   <div class="modal-body">
+                       ...
+                   </div>
+                   <div class="modal-footer">
+                       <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                       <button type="button" class="btn btn-primary">Save changes</button>
+                   </div>
+               </div>
+           </div>
+       </div>
+```
+
+65.If we use springs entity manager, then we need to use transactional also.
