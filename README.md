@@ -964,3 +964,56 @@ Built in modal example:
 ```
 
 65.If we use springs entity manager, then we need to use transactional also.
+66.What is RESTFUL API explained
+
+67.Explained API Gateway
+
+68.Explained stateful vs stateless difference
+
+Restful based on stateless
+
+69.Looked swagger documentation
+
+[70.In](http://70.In) url we can write friendly urls also
+
+example:
+
+students/1/lessons is alternative to
+
+students/lessons/?studentId=1
+
+71.We have JAX-RS specification in java,
+
+Jersey implements this [one.It](http://one.It) helps us instead of writing @GetMapping,
+
+we write it in different way.
+
+@RequestMapping-@Path
+
+@GetMapping-@Get
+
+72.
+
+`@PathVariable` is used to **extract values from the URL path** and bind them to method parameters in a controller.
+
+It's for REST-style URLs like:
+
+```
+bash
+CopyEdit
+GET /students/5
+
+```
+
+Where `5` is part of the **path**, not a query parameter.
+
+Example usage:
+
+```java
+@GetMapping("{id}")
+    public Student getStudentById(@PathVariable Integer id){
+        Optional<Student> byId = studentDataRepo.findById(id);
+        return byId.orElse(null);
+    }
+
+```

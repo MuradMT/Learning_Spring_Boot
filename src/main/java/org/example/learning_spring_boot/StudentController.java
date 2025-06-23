@@ -14,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @CrossOrigin(origins = "http://localhost:63342")
 @RestController
@@ -63,6 +64,12 @@ public class StudentController {
     @PostMapping
     public Student addStudent(@RequestBody Student student){
         return studentDataRepo.save(student);
+    }
+
+    @GetMapping("{id}")
+    public Student getStudentById(@PathVariable Integer id){
+        Optional<Student> byId = studentDataRepo.findById(id);
+        return byId.orElse(null);
     }
 
 }
