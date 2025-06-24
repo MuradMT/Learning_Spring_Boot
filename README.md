@@ -1170,3 +1170,100 @@ implementation 'org.projectlombok:lombok:1.18.32'
 ```
 
 We have again annotation processor.
+
+82.JAX-RS used for Restful,implementation is Jersey and Spring
+
+JAX-WS used for SOAP protocol.
+
+83.We have SOAP Sender and SOAP Receiver,we speak on http ,but we do not use json when we send data or we get data,nstead of json,we generally use XML format.
+
+84.We have @WebService,@WebMethod,@WebParam etc.
+
+85.We can add global CORS configuration instead of using anotation.Example code snippet:
+
+```java
+package org.example.learning_spring_boot.configuration;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+        .allowedOrigins("*")
+        .allowedMethods("*")
+        .allowedHeaders("*");
+    }
+}
+
+```
+
+86.Sending request to java api with Apache HttpClient and converting json to data with Jackson ObjectMapper:
+
+```java
+
+//maven dependencies
+<dependencies>
+    <!-- Apache HttpClient -->
+    <dependency>
+        <groupId>org.apache.httpcomponents.client5</groupId>
+        <artifactId>httpclient5</artifactId>
+        <version>5.3</version>
+    </dependency>
+
+    <!-- Jackson for JSON serialization -->
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>2.17.1</version>
+    </dependency>
+</dependencies>
+
+//Actual code
+package com.influencer.education.console;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+
+public class App {
+    public static void main(String[] args) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+
+            HttpGet request = new HttpGet("http://localhost:9090/education/students");
+            try (CloseableHttpResponse response = httpClient.execute(request)) {
+
+                String responseBody = EntityUtils.toString(response.getEntity());
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                MainResponse mainResponse = objectMapper.readValue(responseBody, MainResponse.class);
+
+                for (StudentResponse student : mainResponse.getObj()) {
+                    System.out.println("Name: " + student.getName());
+                    System.out.println("Email: " + student.getEmail());
+                    if (student.getUniversity() != null) {
+                        System.out.println("University: " + student.getUniversity().getName());
+                    }
+                    System.out.println("-----------");
+                }
+
+            } catch (Exception e) {
+                System.out.println(" Error during HTTP request or parsing:");
+                e.printStackTrace();
+            }
+
+        } catch (Exception e) {
+            System.out.println(" Error creating HttpClient:");
+            e.printStackTrace();
+        }
+    }
+}
+
+```
