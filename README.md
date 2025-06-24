@@ -1361,3 +1361,182 @@ public class GlobalExceptionHandler {
 ```
 
 90.ResponseEntity has 2 parameter:Body and httpstatus.It is useful when we try to return thinhs in controllers.
+91.Adding hibernate independently:
+
+### build.gradle
+
+```groovy
+groovy
+CopyEdit
+plugins {
+    id 'java'
+}
+
+group = 'com.example'
+version = '1.0-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.hibernate.orm:hibernate-core:6.3.1.Final'
+    implementation 'jakarta.persistence:jakarta.persistence-api:3.1.0'
+    implementation 'com.mysql:mysql-connector-j:8.3.0'
+    implementation 'org.slf4j:slf4j-simple:2.0.9'
+}
+
+```
+
+---
+
+### settings.gradle
+
+```groovy
+groovy
+CopyEdit
+rootProject.name = 'hibernate-console-app'
+
+```
+
+---
+
+### src/main/resources/hibernate.cfg.xml
+
+```xml
+xml
+CopyEdit
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+
+        <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/test_db</property>
+        <property name="hibernate.connection.username">root</property>
+        <property name="hibernate.connection.password">your_password</property>
+
+        <property name="hibernate.dialect">org.hibernate.dialect.MySQL8Dialect</property>
+        <property name="hibernate.hbm2ddl.auto">update</property>
+        <property name="hibernate.show_sql">true</property>
+
+        <mapping class="com.example.model.Student"/>
+    </session-factory>
+</hibernate-configuration>
+
+```
+
+---
+
+### src/main/java/com/example/model/Student.java
+
+```java
+java
+CopyEdit
+package com.example.model;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "students")
+public class Student {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    private String name;
+    private int age;
+
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public int getAge() { return age; }
+    public void setAge(int age) { this.age = age; }
+}
+
+```
+
+---
+
+### src/main/java/com/example/util/HibernateUtil.java
+
+```java
+java
+CopyEdit
+package com.example.util;
+
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+
+public class HibernateUtil {
+    private static final SessionFactory sessionFactory;
+
+    static {
+        try {
+            sessionFactory = new Configuration().configure().buildSessionFactory();
+        } catch (Throwable ex) {
+            System.err.println("Initial SessionFactory creation failed: " + ex);
+            throw new ExceptionInInitializerError(ex);
+        }
+    }
+
+    public static SessionFactory getSessionFactory() {
+        return sessionFactory;
+    }
+
+    public static void shutdown() {
+        if (sessionFactory != null && !sessionFactory.isClosed()) {
+            sessionFactory.close();
+        }
+    }
+}
+
+```
+
+---
+
+### src/main/java/com/example/App.java
+
+```java
+java
+CopyEdit
+package com.example;
+
+import com.example.model.Student;
+import com.example.util.HibernateUtil;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+
+public class App {
+    public static void main(String[] args) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Transaction tx = session.beginTransaction();
+
+            Student student = new Student();
+            student.setName("Murad");
+            student.setAge(22);
+
+            session.persist(student);
+
+            tx.commit();
+
+            System.out.println("Student saved with ID: " + student.getId());
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            HibernateUtil.shutdown();
+        }
+    }
+}
+
+```
