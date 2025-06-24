@@ -1,7 +1,6 @@
-package org.example.learning_spring_boot;
+package org.example.learning_spring_boot.student.controller;
 
 import org.example.learning_spring_boot.common.dto.CommonDto;
-import org.example.learning_spring_boot.student.dto.StudentDTO;
 import org.example.learning_spring_boot.student.dto.StudentMapper;
 import org.example.learning_spring_boot.student.entity.Student;
 import org.example.learning_spring_boot.student.entity.StudentProjection;

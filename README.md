@@ -1267,3 +1267,97 @@ public class App {
 }
 
 ```
+87.What is Logging
+
+88.How we use AOP,where is AOP useful
+
+**Spring AOP (Aspect-Oriented Programming)** is a module in the Spring Framework that allows you to **separate cross-cutting concerns** (like logging, security, transactions) from your main business logic.
+
+---
+
+## In Simple Words:
+
+It lets you **inject behavior before, after, or around** method executions **without modifying the actual code**.
+
+---
+
+### Use Cases (Cross-Cutting Concerns)
+
+- Logging
+- Security checks
+- Transaction management
+- Caching
+- Performance monitoring
+- Auditing
+
+```java
+//How to log everything in controllers 
+//before and after executing,after throwing exception examples
+
+@Aspect
+@Component
+public class RestControllerInputLogger {
+
+    private static final Logger logger = LoggerFactory.getLogger(RestControllerInputLogger.class);
+
+    // Before any controller method runs
+    @Before("execution(* org.example.learning_spring_boot.student.controller..*(..))")
+    public void logBefore(JoinPoint joinPoint) {
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        String methodName = signature.getName();
+        String arguments = Arrays.toString(joinPoint.getArgs());
+
+        logger.info("Executing method: {} with arguments: {}", methodName, arguments);
+    }
+
+    // After successful method execution
+    @AfterReturning(pointcut = "execution(* org.example.learning_spring_boot.student.controller..*(..))", returning = "result")
+    public void logAfterReturning(JoinPoint joinPoint, Object result) {
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        String methodName = signature.getName();
+
+        logger.info("Method: {} executed successfully with result: {}", methodName, result);
+    }
+
+    // After exception is thrown
+    @AfterThrowing(pointcut = "execution(* org.example.learning_spring_boot.student.controller..*(..))", throwing = "exception")
+    public void logAfterThrowing(JoinPoint joinPoint, Exception exception) {
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        String methodName = signature.getName();
+
+        logger.error("Method: {} thrown an exception: {}", methodName, exception.getMessage());
+    }
+}
+
+```
+
+89.We do global exception handling with @ControllerAdvice,it looks like AOP,but specifcally used for exception handling.
+
+```java
+
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+    private static final Log LOG = LogFactory.getLog(GlobalExceptionHandler.class);
+
+    @ExceptionHandler(IllegalArgumentException.class)//handles bad request
+    public ResponseEntity<String> handleBadRequestException(IllegalArgumentException e){
+        LOG.error("Bad request error happened",e);
+        return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleOtherExceptions(Exception ex) {
+        LOG.error(ex.getMessage(), ex);
+        return new ResponseEntity<>("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    @ExceptionHandler(NoSuchElementException.class)//not found exception
+    public ResponseEntity<String> handleNotFoundException(NoSuchElementException ex){
+        LOG.error("The requested resource was not found", ex);
+        return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
+    }
+}
+
+```
+
+90.ResponseEntity has 2 parameter:Body and httpstatus.It is useful when we try to return thinhs in controllers.
